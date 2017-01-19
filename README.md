@@ -1,7 +1,48 @@
 项目开发规范说明
 ========
 
-[TOC]
+目录
+----
+1. [项目准备阶段](#项目准备阶段)
+* [开发环境](#开发环境)
+* [代码托管软件](#代码托管软件)
+* [GIT工作流程](#GIT工作流程)
+2. [代码目录组织结构（仅供参考）](#代码目录组织结构（仅供参考）)
+* [后端common目录结构](#后端common目录结构)
+* [后端应用服务器目录结构](#后端应用服务器目录结构)
+* [前端vue+vuex构建SPA目录结构](#前端vue+vuex构建SPA目录结构)
+* [公共代码部分怎样进行引用？](公共代码部分怎样进行引用？)
+* [为什么要实现前后端分离](#为什么要实现前后端分离)
+3. [代码规范](#代码规范)
+* [文件夹和文件](#文件夹和文件)
+* [类名和命名空间](#类名和命名空间)
+* [函数](#函数)
+* [变量](#变量)
+* [常量](#常量)
+* [html属性和class、id值](#html属性和class、id值)
+* [URL](#URL)
+* [数据库](#数据库)
+* [数据表](#数据表)
+* [字段，数据表字段或者json的key](#字段，数据表字段或者json的key)
+* [其他](#其他)
+4. [API接口规范](#API接口规范)
+5. [自动化构建](#自动化构建)
+6. [自动化测试](#自动化测试)
+7. [自动化部署](#自动化部署)
+8. [Python开发相关](#Python开发相关)
+* [服务器](#服务器)
+* [路由](#路由)
+* [控制器](#控制器)
+* [中间件](#中间件)
+* [会话](#会话)
+* [日志](#日志)
+* [缓存](#缓存)
+* [事件](#事件)
+* [异常处理](#异常处理)
+* [数据迁移](#数据迁移)
+* [ORM](#ORM)
+* [其他服务](#其他服务)
+* [常用库列表](#常用库列表)
 
 项目准备阶段
 --------
@@ -12,10 +53,10 @@
 
 #### 代码托管软件
 使用gitlab，到时每个人分配一个gitlab的账号，项目负责人创建一个组group，为项目名称，然后管理后台，官网，pc端主站点，手机端主站点等各自创建前后端代码的子项目project，方便单独发布和管理版本。例如：
-![项目列表](https://dn-shimo-image.qbox.me/J3w2wz16jCAvJ8IQ.png!thumbnail)
+![项目列表](images/projects.png)
 
 #### GIT工作流程
-![GIT工作流程](http://images.cnblogs.com/cnblogs_com/cnblogsfans/771108/o_git-flow-nvie.png)
+![GIT工作流程](images/o_git-flow-nvie.png)
 参考[http://www.cnblogs.com/cnblogsfans/p/5075073.html](http://www.cnblogs.com/cnblogsfans/p/5075073.html)
 
 代码目录组织结构（仅供参考）
@@ -125,22 +166,22 @@ API返回数据结构统一如下：
 
 这里介绍一下我在项目中的配置，仅供参考
 1. 填写项目名称和描述和一些构建配置，默认在构建的服务器上运行。
-![构建配置](https://dn-shimo-image.qbox.me/2lroUMkErX0LVZeD/image.png!thumbnail)
+![构建配置](images/build1.png)
 
 2. 配置源代码，gitlab需要安装GIT插件。因为使用了submodule，所以额外行为那里，添加上对submodule的递归更新，submodule的证书使用跟主模块一致。
-![配置源代码](https://dn-shimo-image.qbox.me/8r6RmfrLBGc1CN04/image.png!thumbnail)
+![配置源代码](images/build2.png)
 
 3. 配置构建触发器，需要安装gitlab插件。这里是关键，当一个改变推送到gitlab时，push时会触发gitlab的web hook url，从而触发构建。正式环境建议不要dev分支merge到master分支就自动触发构建，最好手动触发构建来发布。
-![配置构建触发器](https://dn-shimo-image.qbox.me/F8mxiWapiwMc5GUZ/image.png!thumbnail)
+![配置构建触发器](images/build3.png)
 
 4. 构建。先把gitlab的代码复制到一个临时目录，合并上环境变量配置文件，然后运行测试用例，通过测试则把上线的代码准备到一个临时目录。
-![后端构建](https://dn-shimo-image.qbox.me/3hbDVL0fQxYDDH0S/image.png!thumbnail)
+![后端构建](images/build4.png)
 
 5. 构建后操作，构建失败发送邮件通知相关人。
-![构建后操作](https://dn-shimo-image.qbox.me/rXKq7YTYucUgkQQr/image.png!thumbnail)
+![构建后操作](images/build5.png)
 
 6. 前端步骤4的构建脚本跟后端不一样，其他配置一样。先在构建目录安装新的依赖包，把gitlab代码除了node_modules以外，复制到一个临时目录，再把node_modules转移过去临时目录（这样做的原因是因为复制node_modules耗时太大），最后运行npm run dev或者npm run build。
-![前端构建](https://dn-shimo-image.qbox.me/4N65L3ueHHYN7VBY/image.png!thumbnail)
+![前端构建](images/build6.png)
 
 自动化测试
 --------
@@ -155,9 +196,9 @@ API返回数据结构统一如下：
 --------
 
 为了实现自动化部署，方便管理版本的发布和回滚，多台服务器发布，运行环境等，自动化部署使用[mina](https://github.com/mina-deploy/mina)，不过目前采用比较简单的方案，通过jenkins把build之后的目标代码，通过rsync同步到各个服务器（这个需要创建多配置项目），并重启服务器。
-![自动化部署1](https://dn-shimo-image.qbox.me/4sz55i1yhuEHHClT/image.png!thumbnail)
-![自动化部署2](https://dn-shimo-image.qbox.me/ngvECzkpPOkShNSd/image.png!thumbnail)
-![自动化部署3](https://dn-shimo-image.qbox.me/Ff30ShlQPhMzvlnx/image.png!thumbnail)
+![自动化部署1](images/deploy1.png)
+![自动化部署2](images/deploy2.png)
+![自动化部署3](images/deploy3.png)
 
 Python开发相关
 --------
